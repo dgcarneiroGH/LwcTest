@@ -1,0 +1,14 @@
+/**
+ * @description       :
+ * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @group             :
+ * @last modified on  : 10-24-2024
+ * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ **/
+public with sharing class CaseController {
+    @AuraEnabled(cacheable=true)
+    public static List<Case> getCasesByAccountId(Id accountId) {
+        return [SELECT Id, CaseNumber, Type, SubType__c, Reason, ContactId FROM Case WHERE AccountId = :accountId];
+    }
+    
+}
