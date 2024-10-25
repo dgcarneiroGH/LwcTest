@@ -8,7 +8,10 @@
 public with sharing class CaseController {
     @AuraEnabled(cacheable=true)
     public static List<Case> getCasesByAccountId(Id accountId) {
-        return [SELECT Id, CaseNumber, Type, SubType__c, Reason, ContactId FROM Case WHERE AccountId = :accountId];
+        List<Case> cases = [SELECT Id, CaseNumber, Type, SubType__c, Reason, ContactId FROM Case WHERE AccountId = :accountId];
+        System.debug(cases.size());
+        return cases;
+        // return [SELECT Id, CaseNumber, Type, SubType__c, Reason, ContactId FROM Case WHERE AccountId = :accountId];
     }
     
 }

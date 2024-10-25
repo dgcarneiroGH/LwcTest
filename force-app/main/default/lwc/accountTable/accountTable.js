@@ -1,43 +1,50 @@
-import { LightningElement, api, wire, track } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import getCasesByAccountId from '@salesforce/apex/CaseController.getCasesByAccountId';
-import { createRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import CASE_OBJECT from '@salesforce/schema/Case';
-import CASE_ACCOUNT_FIELD from '@salesforce/schema/Case.AccountId';
+import { refreshApex } from '@salesforce/apex';
 
 const COLUMNS = [
-    { label: 'Número de caso', fieldName: 'CaseNumber' },
-    { label: 'Tipo', fieldName: 'Type' },
-    { label: 'Subtipo', fieldName: 'Subtype__c' },
-    { label: 'Motivo', fieldName: 'Reason' },
-    { label: 'Nombre de contacto', fieldName: 'ContactId' }
+    { label: 'Case number', fieldName: 'CaseNumber' },
+    { label: 'Type', fieldName: 'Type' },
+    { label: 'SubType', fieldName: 'Subtype__c' },
+    { label: 'Reason', fieldName: 'Reason' },
+    { label: 'Contact name', fieldName: 'ContactId' }
 ];
 
 export default class AccountTable extends LightningElement {
     @api recordId;
     columns = COLUMNS;
     cases = [];
+    isModalOpen = false;
+    searchTerm = '';
 
-    @track isModalOpen = false;
-    @track newCase = {};
+    @wire(getCasesByAccountId, { accountId: '$recordId' })
+    wiredAccount(result) {
+        this.wiredCasesResult = result;
+        const { data, error } = result;
 
-    @wire(getCasesByAccountId, { recordId: '$recordId' })
-    wiredAccount({ error, data }) {
         if (data) {
             this.cases = data;
         } else if (error) {
+            this.showToast('Error', 'Error al cargar casos', 'error');
             console.error(error);
         }
     }
 
-    get hasCases() {
-        return this.cases.length > 0;
+    get filteredCases() {
+        if (this.searchTerm) {
+            return this.cases.filter(c =>
+                c.Type && c.Type.toLowerCase().includes(this.searchTerm.toLowerCase())
+            );
+        }
+        return this.cases;
+    }
+
+    handleSearchInput(event) {
+        this.searchTerm = event.target.value;
     }
 
     handleOpenModal() {
-        console.log(this.recordId);
-
-        this.newCase = { AccountId: this.recordId };
         this.isModalOpen = true;
     }
 
@@ -45,50 +52,21 @@ export default class AccountTable extends LightningElement {
         this.isModalOpen = false;
     }
 
-    handleInputChange(event) {
-        const field = event.target.dataset.id;
-        this.newCase[field] = event.target.value;
-    }
-
-    handleSaveCase() {
-        const inputFields = this.template.querySelectorAll('lightning-input-field');
-        const allValid = [...inputFields].reduce((validSoFar, inputField) => {
-            inputField.reportValidity();
-            return validSoFar && inputField.checkValidity();
-        }, true);
-
-        console.log(allValid);
-        if (allValid) {
-            this.template.querySelector('lightning-record-edit-form').submit();
-        } else {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Error',
-                    message: 'Por favor, complete todos los campos obligatorios.',
-                    variant: 'error'
-                })
-            );
-        }
-    }
-
     handleSuccess() {
         this.handleCloseModal();
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Éxito',
-                message: 'Caso creado correctamente.',
-                variant: 'success'
-            })
-        );
+        this.showToast('Éxito', 'Caso creado correctamente', 'success');
+        return refreshApex(this.wiredAccount);
     }
 
     handleError(event) {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Error al crear el caso',
-                message: event.detail.message,
-                variant: 'error'
-            })
-        );
+        this.showToast('Error', event.detail.message, 'error');
+    }
+
+    handleSubmit() {
+        console.log('Formulario enviado');
+    }
+
+    showToast(title, message, variant) {
+        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 }
