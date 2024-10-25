@@ -8,15 +8,27 @@ const COLUMNS = [
     { label: 'Type', fieldName: 'Type' },
     { label: 'SubType', fieldName: 'Subtype__c' },
     { label: 'Reason', fieldName: 'Reason' },
-    { label: 'Contact name', fieldName: 'ContactId' }
+    { label: 'Contact name', fieldName: 'ContactId' },
+    {
+        type: 'button-icon',
+        typeAttributes: {
+            iconName: 'utility:info',
+            name: 'view_info',
+            variant: 'bare',
+            alternativeText: 'Information'
+        },
+        initialWidth: 50
+    },
 ];
 
 export default class AccountTable extends LightningElement {
     @api recordId;
     columns = COLUMNS;
     cases = [];
-    isModalOpen = false;
+    isCreateModalOpen = false;
+    isInfoModalOpen = false;
     searchTerm = '';
+    selectedCase = {};
 
     @wire(getCasesByAccountId, { accountId: '$recordId' })
     wiredAccount(result) {
@@ -24,7 +36,12 @@ export default class AccountTable extends LightningElement {
         const { data, error } = result;
 
         if (data) {
-            this.cases = data;
+            this.cases = data.map(c => ({
+                ...c,
+                ContactName: c.Contact ? c.Contact.Name : '',
+                ContactEmail: c.Contact ? c.Contact.Email : '',
+                ContactPhone: c.Contact ? c.Contact.Phone : ''
+            }))
         } else if (error) {
             this.showToast('Error', 'Error al cargar casos', 'error');
             console.error(error);
@@ -44,26 +61,35 @@ export default class AccountTable extends LightningElement {
         this.searchTerm = event.target.value;
     }
 
-    handleOpenModal() {
-        this.isModalOpen = true;
+    handleOpenCreateModal() {
+        this.isCreateModalOpen = true;
     }
 
-    handleCloseModal() {
-        this.isModalOpen = false;
+    handleCloseCreateModal() {
+        this.isCreateModalOpen = false;
     }
 
-    handleSuccess() {
-        this.handleCloseModal();
+    handleCreateSuccess() {
+        this.handleCloseCreateModal();
         this.showToast('Éxito', 'Caso creado correctamente', 'success');
         return refreshApex(this.wiredAccount);
     }
 
-    handleError(event) {
+    handleCreateError(event) {
         this.showToast('Error', event.detail.message, 'error');
     }
 
-    handleSubmit() {
-        console.log('Formulario enviado');
+    handleRowAction(event) {
+        const actionName = event.detail.action.name;
+        const row = event.detail.row;
+        if (actionName === 'view_info') {
+            this.selectedCase = row;
+            this.isInfoModalOpen = true;
+        }
+    }
+
+    handleCloseInfoModal() {
+        this.isInfoModalOpen = false;
     }
 
     showToast(title, message, variant) {
