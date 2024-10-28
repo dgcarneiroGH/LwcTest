@@ -19,14 +19,26 @@ const COLUMNS = [
         },
         initialWidth: 50
     },
+    {
+        type: 'button-icon',
+        typeAttributes: {
+            iconName: 'utility:upload',
+            name: 'add_file',
+            variant: 'bare',
+            alternativeText: 'Add file'
+        },
+        initialWidth: 50
+    },
 ];
 
 export default class AccountTable extends LightningElement {
     @api recordId;
+
     columns = COLUMNS;
     cases = [];
     isCreateModalOpen = false;
     isInfoModalOpen = false;
+    isFileModalOpen = false;
     searchTerm = '';
     selectedCase = {};
 
@@ -61,35 +73,41 @@ export default class AccountTable extends LightningElement {
         this.searchTerm = event.target.value;
     }
 
+    handleCloseModals() {
+        this.isCreateModalOpen = false;
+        this.isInfoModalOpen = false;
+        this.isFileModalOpen = false;
+    }
+
     handleOpenCreateModal() {
         this.isCreateModalOpen = true;
     }
-
-    handleCloseCreateModal() {
-        this.isCreateModalOpen = false;
+    handleModalError(event) {
+        this.showToast('Error', event.detail, 'error');
     }
 
-    handleCreateSuccess() {
-        this.handleCloseCreateModal();
-        this.showToast('Éxito', 'Caso creado correctamente', 'success');
+    handleModalSuccess(event) {
+        this.handleCloseModals();
+        this.showToast('Success', event.detail, 'success');
         return refreshApex(this.wiredAccount);
-    }
-
-    handleCreateError(event) {
-        this.showToast('Error', event.detail.message, 'error');
     }
 
     handleRowAction(event) {
         const actionName = event.detail.action.name;
-        const row = event.detail.row;
-        if (actionName === 'view_info') {
-            this.selectedCase = row;
-            this.isInfoModalOpen = true;
-        }
-    }
+        this.selectedCase = event.detail.row;
 
-    handleCloseInfoModal() {
-        this.isInfoModalOpen = false;
+        switch (actionName) {
+            case 'view_info':
+                this.isInfoModalOpen = true;
+                break;
+
+            case 'add_file':
+                this.isFileModalOpen = true;
+                break;
+
+            default:
+                break;
+        }
     }
 
     showToast(title, message, variant) {

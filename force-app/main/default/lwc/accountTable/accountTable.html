@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 10-25-2024
+  @last modified on  : 10-28-2024
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 -->
 <template>
@@ -29,15 +29,24 @@
 
     <template if:true={isCreateModalOpen}>
         <c-create-case-modal record-id={recordId} 
-            onclose={handleCloseCreateModal} 
-            onsuccess={handleCreateSuccess} 
-            onerror={handleCreateError}>
+            onclose={handleCloseModals} 
+            onsuccess={handleModalSuccess} 
+            onerror={handleModalError}>
         </c-create-case-modal>
     </template>
 
     <template if:true={isInfoModalOpen}>
         <c-case-details-modal case-data={selectedCase} 
-            onclose={handleCloseInfoModal}>
+            onclose={handleCloseModals}>
         </c-case-details-modal>
+    </template>
+
+    <template if:true={isFileModalOpen}>
+        <c-add-file-modal
+            case-data={selectedCase}
+            onclose={handleCloseModals}
+            onsuccess={handleModalSuccess} 
+            onerror={handleModalError}>
+        </c-add-file-modal>
     </template>
 </template>

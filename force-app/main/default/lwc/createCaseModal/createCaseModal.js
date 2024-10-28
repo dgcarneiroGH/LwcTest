@@ -4,15 +4,11 @@ export default class CreateCaseModal extends LightningElement {
     @api recordId;
 
     handleSuccess() {
-        this.dispatchEvent(new CustomEvent('success'));
+        this.dispatchEvent(new CustomEvent('success', { detail: 'Case created correctly' }));
     }
 
     handleError(event) {
         this.dispatchEvent(new CustomEvent('error', { detail: event.detail }));
-    }
-
-    handleSubmit(event) {
-        console.log('Formulario enviado');
     }
 
     closeModal() {

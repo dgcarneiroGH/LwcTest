@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 10-25-2024
+  @last modified on  : 10-28-2024
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 -->
 <template>
@@ -18,8 +18,7 @@
             <div class="slds-modal__content slds-p-around_medium">
                 <lightning-record-edit-form object-api-name="Case"
                  onsuccess={handleSuccess} 
-                onerror={handleError} 
-                onsubmit={handleSubmit}>
+                onerror={handleError}>
                 <div class="slds-grid slds-gutters">
                     <div class="slds-col">
                         <lightning-input-field field-name="ContactId"></lightning-input-field>
@@ -35,8 +34,8 @@
                     </div>
                 </div>
                     <footer class="slds-modal__footer">
-                        <lightning-button class="slds-m-right_medium" variant="neutral" label="Cancelar" onclick={closeModal}></lightning-button>
-                        <lightning-button variant="brand" type="submit" label="Guardar"></lightning-button>
+                        <lightning-button class="slds-m-right_medium" variant="neutral" label="Cancel" onclick={closeModal}></lightning-button>
+                        <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
                     </footer>
                 </lightning-record-edit-form>
             </div>
